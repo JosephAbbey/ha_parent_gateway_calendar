@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
-from homeassistant.config_entries import ConfigEntry
+from typing import TYPE_CHECKING
+
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 
 from . import api
-from .const import DOMAIN, CONF_PARENT_GATEWAY_DOMAIN
+from .const import CONF_PARENT_GATEWAY_DOMAIN, DOMAIN
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
 
 PLATFORMS: list[Platform] = [Platform.CALENDAR]
 

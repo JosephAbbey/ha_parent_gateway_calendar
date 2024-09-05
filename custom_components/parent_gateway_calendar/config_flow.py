@@ -6,7 +6,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlow
 
-from .const import DOMAIN, CONF_PARENT_GATEWAY_DOMAIN
+from .const import CONF_PARENT_GATEWAY_DOMAIN, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,9 +19,9 @@ class ParentGatewayCalendarConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self,
         user_input: dict | None = None,
-    ) -> config_entries.FlowResult:
+    ) -> config_entries.ConfigFlowResult:
         """Handle a flow initialized by the user."""
-        _errors = {}
+        _errors: dict[str, str] = {}
         if user_input is not None:
             return self.async_create_entry(
                 title="Parent Gateway Calendar",

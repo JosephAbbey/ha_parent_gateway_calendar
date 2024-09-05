@@ -3,10 +3,10 @@
 import asyncio
 import datetime
 import logging
-from typing import Any, Final
 from collections.abc import Iterable
-import pytz
+from typing import Any, Final
 
+import pytz
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -19,7 +19,7 @@ TIMEOUT = 10
 
 
 class CalendarUpdateCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
-    """Coordinator for fetching Parent Gateway Calendar for an Event List form the API."""
+    """Coordinator for fetching an Event List from the API."""
 
     def __init__(self, hass: HomeAssistant, api: AsyncConfigEntryAuth) -> None:
         """Initialize CalendarUpdateCoordinator."""

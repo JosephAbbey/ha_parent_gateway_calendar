@@ -1,17 +1,17 @@
 """API for Parent Gateway Calendar."""
 
 import logging
-from typing import Any, Literal
 from datetime import datetime
-
-from homeassistant.core import HomeAssistant
+from typing import Any, Literal
 
 import requests
+import requests.utils
+from homeassistant.core import HomeAssistant
 
 from .exceptions import ParentGatewayCalendarApiError
 
 
-def headers():
+def headers() -> dict[str, str]:
     """Return headers for Parent Gateway Calendar API requests."""
     return {
         "Accept": "application/json",
@@ -23,23 +23,19 @@ _LOGGER = logging.getLogger(__name__)
 
 def _raise_if_error(result: Any | dict[str, Any]) -> None:
     """Raise a ParentGatewayCalendarApiError if the response contains an error."""
-    if not (isinstance(result, list) or isinstance(result, dict)):
-        raise ParentGatewayCalendarApiError(
-            f"Parent Gateway Calendar API replied with unexpected response: {result}"
-        )
+    if not (isinstance(result, list | dict)):
+        msg = f"Parent Gateway Calendar API replied with unexpected response: {result}"
+        raise ParentGatewayCalendarApiError(msg)
     if (isinstance(result, dict)) and (error := result.get("error")):
         if isinstance(error, dict):
             message = error.get("message", "Unknown Error")
-            raise ParentGatewayCalendarApiError(
-                f"Parent Gateway Calendar API response: {message}"
-            )
+            msg = f"Parent Gateway Calendar API response: {message}"
+            raise ParentGatewayCalendarApiError(msg)
         if isinstance(error, str):
-            raise ParentGatewayCalendarApiError(
-                f"Parent Gateway Calendar API response: {error}"
-            )
-        raise ParentGatewayCalendarApiError(
-            f"Parent Gateway Calendar API response: {error}"
-        )
+            msg = f"Parent Gateway Calendar API response: {error}"
+            raise ParentGatewayCalendarApiError(msg)
+        msg = f"Parent Gateway Calendar API response: {error}"
+        raise ParentGatewayCalendarApiError(msg)
 
 
 class AsyncConfigEntryAuth:
@@ -50,28 +46,19 @@ class AsyncConfigEntryAuth:
         self._hass = hass
         self._domain = domain
 
-    async def list_events(self, start: datetime, end: datetime):
+    async def list_events(self, start: datetime, end: datetime) -> list[dict[str, Any]]:
         """Get this week's events."""
-        cachebuster = datetime.now().timestamp()
+        cachebuster = datetime.now().timestamp()  # noqa: DTZ005
         start_encoded = requests.utils.quote(start.isoformat())
         end_encoded = requests.utils.quote(end.isoformat())
-        response = await self._execute(
+        return await self._execute(
             "GET",
             f"https://{self._domain}/calendar/handlers/getcalendar.ashx?cachebuster={cachebuster}&start={start_encoded}&end={end_encoded}",
         )
-        return response
 
     async def _execute(
         self,
-        method: (
-            Literal["GET"]
-            | Literal["POST"]
-            | Literal["PUT"]
-            | Literal["DELETE"]
-            | Literal["OPTIONS"]
-            | Literal["PATCH"]
-            | Literal["HEAD"]
-        ),
+        method: (Literal["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"]),
         path: str,
         json: Any | None = None,
     ) -> Any:
@@ -86,13 +73,11 @@ class AsyncConfigEntryAuth:
                 )
             )
         except requests.ConnectionError as err:
-            raise ParentGatewayCalendarApiError(
-                "Could not connect to Parent Gateway Calendar API"
-            ) from err
+            msg = "Could not connect to Parent Gateway Calendar API"
+            raise ParentGatewayCalendarApiError(msg) from err
         except requests.Timeout as err:
-            raise ParentGatewayCalendarApiError(
-                "Timeout connecting to Parent Gateway Calendar API"
-            ) from err
+            msg = "Timeout connecting to Parent Gateway Calendar API"
+            raise ParentGatewayCalendarApiError(msg) from err
         r = None
         try:
             r = result.json()

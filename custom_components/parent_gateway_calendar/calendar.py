@@ -2,19 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import datetime, date
-import logging
-from typing import Any, Optional, Iterable
 import dataclasses
-import pytz
+import logging
+from datetime import date, datetime
+from typing import TYPE_CHECKING, Any
 
+import pytz
 from homeassistant.components.calendar import (
     CalendarEntity,
     CalendarEvent,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
@@ -22,8 +19,16 @@ from homeassistant.helpers.update_coordinator import (
 from .const import (
     DOMAIN,
 )
-from .api import AsyncConfigEntryAuth
 from .coordinator import CalendarUpdateCoordinator
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+    from .api import AsyncConfigEntryAuth
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +37,7 @@ def _event_dict_factory(obj: Iterable[tuple[str, Any]]) -> dict[str, str]:
     """Convert CalendarEvent dataclass items to dictionary of attributes."""
     result: dict[str, str] = {}
     for name, value in obj:
-        if isinstance(value, (datetime, date)):
+        if isinstance(value, datetime | date):
             result[name] = value.isoformat()
         elif value is not None:
             result[name] = str(value)
@@ -43,8 +48,8 @@ def _event_dict_factory(obj: Iterable[tuple[str, Any]]) -> dict[str, str]:
 class ParentGatewayCalendarEvent(CalendarEvent):
     """Parent Gateway Calendar event."""
 
-    category: Optional[str] = None
-    subcategory: Optional[str] = None
+    category: str | None = None
+    subcategory: str | None = None
     publicapplicabilitylist: list[str] = dataclasses.field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
@@ -90,7 +95,11 @@ class ParentGatewayCalendarEntity(
         super().__init__(coordinator)
         self._attr_unique_id = config_entry_id
 
-    def _convert_event(self, tz, event: dict[str, Any]):
+    def _convert_event(
+        self,
+        tz: (pytz._UTCclass | pytz.StaticTzInfo | pytz.DstTzInfo),
+        event: dict[str, Any],
+    ) -> ParentGatewayCalendarEvent:
         if event.get("allDay", False) or event.get("isallDay", False):
             return ParentGatewayCalendarEvent(
                 uid=event["id"],
@@ -135,20 +144,21 @@ class ParentGatewayCalendarEntity(
     @property
     def offset_reached(self) -> bool:
         """Return whether or not the event offset was reached."""
+        tz = pytz.timezone(self.hass.config.time_zone)
         return (
             self.coordinator.upcoming is not None and len(self.coordinator.upcoming) > 0
         ) and (
-            datetime.fromisoformat(self.coordinator.upcoming["start"]) <= datetime.now()
+            datetime.fromisoformat(self.coordinator.upcoming["start"])
+            <= datetime.now(tz=tz)
         )
 
     @property
-    def event(self) -> ParentGatewayCalendarEntity | None:
+    def event(self) -> ParentGatewayCalendarEvent | None:
         """Return the next upcoming event."""
         tz = pytz.timezone(self.hass.config.time_zone)
         if self.coordinator.upcoming is not None and len(self.coordinator.upcoming) > 0:
             return self._convert_event(tz, self.coordinator.upcoming[0])
-        else:
-            return None
+        return None
 
     async def async_get_events(
         self, hass: HomeAssistant, start_date: datetime, end_date: datetime
