@@ -26,7 +26,6 @@ The integration takes an existing calendar entity and on demand filters the even
 
 It is available through the add service button under devices and services.
 
-[![Open your Home Assistant instance and show your helper entities.](https://my.home-assistant.io/badges/helpers.svg)](https://my.home-assistant.io/redirect/helpers/)
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=parent_gateway_calendar)
 
 <!---->
