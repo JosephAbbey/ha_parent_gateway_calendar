@@ -1,0 +1,12 @@
+{
+  "domain": "parent_gateway_calendar",
+  "name": "Parent Gateway Calendar",
+  "codeowners": [
+    "@josephabbey"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/josephabbey/ha_parent_gateway_calendar",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/josephabbey/ha_parent_gateway_calendar/issues",
+  "version": "v0.0.1"
+}

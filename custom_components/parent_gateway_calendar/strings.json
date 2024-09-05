@@ -1,0 +1,12 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "User",
+        "data": {
+          "parent_gateway_domain": "Parent Gateway Domain"
+        }
+      }
+    }
+  }
+}
