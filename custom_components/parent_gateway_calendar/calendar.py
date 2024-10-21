@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import pytz
@@ -105,7 +105,7 @@ class ParentGatewayCalendarEntity(
                 uid=event["id"],
                 summary=event["title"],
                 start=datetime.fromisoformat(event["start"]).astimezone(tz=tz).date(),
-                end=datetime.fromisoformat(event["end"]).astimezone(tz=tz).date(),
+                end=datetime.fromisoformat(event["end"]).astimezone(tz=tz).date() + timedelta(days=1),
                 description=event["notes"],
                 location=event["location"].strip("; "),
                 category=event["category"],
